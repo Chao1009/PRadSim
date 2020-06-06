@@ -470,6 +470,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4LogicalVolume *logicUBeamPipe = new G4LogicalVolume(solidUBeamPipe, VacuumTubeM, "UBeamPipeLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, UBeamPipeCenter), logicUBeamPipe, "Upstream Beam Pipe", logicWorld, false, 0);
 
+    AddScintTracker(logicWorld, G4ThreeVector(0., 0., fTargetCenter + 25.0*cm));
     AddVaccumBox(logicWorld);
 
     // Center of two GEM should be at -3000.0 + 89.0 + (5226.16 + 5186.45) / 2 + 4.6525 = 2299.9575 mm // (5226.16 + 5186.45) / 2 from Weizhi
@@ -485,7 +486,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4double VirtualDetZ = 0.1 * mm;
     G4VSolid *solidVirtualDet = new G4Tubs("VirtualDetS", 0, VirtualDetR, VirtualDetZ / 2.0, 0, twopi);
     G4LogicalVolume *logicVirtualDet = new G4LogicalVolume(solidVirtualDet, VirtualDetM, "VirtualDetLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 60 * mm), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 24.0*cm), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
 
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
@@ -522,6 +523,14 @@ void DetectorConstruction::DefinePRadSDs()
 
         for (int i = 0; i < 576; i++)
             SetSensitiveDetector(Form("PbGlassAbsorber%04dLV", i), HyCalSD);
+    }
+
+    if (true) {
+        StandardDetectorSD *ScintTrackerSD = new TrackingDetectorSD("ScintTrackerSD", "ST");
+        G4SDManager::GetSDMpointer()->AddNewDetector(ScintTrackerSD);
+        for (int i = 0; i < 4; ++i) {
+            SetSensitiveDetector(Form("STPlane%01dLV", i), ScintTrackerSD);
+        }
     }
 
     if (fVirtualSDOn) {
@@ -623,6 +632,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet2Cover, "Recoil Detector 2 Cover", logicTarget, false, 1);
     new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet2, "Recoil Detector 2", logicTarget, false, 1);
 
+    AddScintTracker(logicWorld, G4ThreeVector(0., 0., fTargetCenter + 25.0*cm));
     AddVaccumBox(logicWorld);
 
     AddGEM(logicWorld, 0, true);
@@ -678,6 +688,14 @@ void DetectorConstruction::DefineDRadSDs()
         StandardDetectorSD *SciPlaneSD = new StandardDetectorSD("ScintillatorPlaneSD", "SP");
         G4SDManager::GetSDMpointer()->AddNewDetector(SciPlaneSD);
         SetSensitiveDetector("ScintillatorPlaneLV", SciPlaneSD);
+    }
+
+    if (true) {
+        StandardDetectorSD *ScintTrackerSD = new StandardDetectorSD("ScintTrackerSD", "ST");
+        G4SDManager::GetSDMpointer()->AddNewDetector(ScintTrackerSD);
+        for (int i = 0; i < 4; ++i) {
+            SetSensitiveDetector(Form("STPlane%01dLV", i), ScintTrackerSD);
+        }
     }
 
     if (fHyCalSDOn) {
@@ -798,7 +816,7 @@ void DetectorConstruction::AddVaccumBox(G4LogicalVolume *mother)
     G4double zPlaneDC[] = {0, 32.83 * cm, 32.83 * cm, 35.37 * cm, 35.37 * cm, 71.00 * cm};
     G4VSolid *solidDownChamber = new G4Polycone("DownstreamChamberS", 0, twopi, 6, zPlaneDC, rInnerDC, rOuterDC);
     G4LogicalVolume *logicDownChamber = new G4LogicalVolume(solidDownChamber, ChamberM, "DownstreamChamberLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fDownChamberCenter - DownChamberHalfL), logicDownChamber, "Downstream Chamber", mother, false, 0);
+    // new G4PVPlacement(0, G4ThreeVector(0, 0, fDownChamberCenter - DownChamberHalfL), logicDownChamber, "Downstream Chamber", mother, false, 0);
 
     // Downstream chamber window
     G4double DownChamberApertureR = 22.8 * mm;
@@ -1043,6 +1061,53 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
     zoff += GEMGlueT;
 
     new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfT - GEMWinT / 2.0), logicGEMWin, Form("GEM %d Window", layerid), logicGEMGas, false, 1);
+}
+
+void DetectorConstruction::AddScintTracker(G4LogicalVolume *mother, G4ThreeVector pos)
+{
+    // aluminum holding frame
+    auto void_mat = G4Material::GetMaterial("Galaxy");
+    auto frame_mat = G4Material::GetMaterial("Aluminum");
+    auto scint_mat = G4Material::GetMaterial("EJ204");
+
+    G4double tol = 0.1*cm;
+    G4double slen_short = 3.0*cm;
+    G4double slen_long = 4.0*cm;
+    G4double fwidth_x = slen_long + 2.*slen_short;
+    G4double fwidth_y = slen_long + 2.*slen_short;
+    G4double fthick_x = 0.5*cm;
+    G4double fthick_y = 0.5*cm;
+    G4double fthick_z = 0.5*cm;
+
+    // Container
+    auto *STConBox = new G4Box("STConBox", (fwidth_x + fthick_x + tol)/2.,
+                               (fwidth_y + fthick_y + tol)/2., (fthick_z + tol)/2.);
+    auto *STConHole = new G4Box("STConHole", (slen_long - tol)/2., (slen_long - tol)/2., (fthick_z + tol + 0.1)/2.);
+    auto *solidSTCon = new G4SubtractionSolid("STContainerS", STConBox, STConHole);
+    auto *logicSTCon = new G4LogicalVolume(solidSTCon, void_mat, "STContainerLV");
+    new G4PVPlacement(0, pos, logicSTCon, "Scintillator Tracker Container", mother, false, 0);
+
+    // Frame
+    auto *frame_box1 = new G4Box("FrameBox1", (fwidth_x + fthick_x)/2., (fwidth_y + fthick_y)/2., fthick_z/2.);
+    auto *frame_box2 = new G4Box("FrameBox2", fwidth_x/2., fwidth_y/2., (fthick_z + 0.1)/2.);
+
+    auto *solidSTFrame = new G4SubtractionSolid("STFrameS", frame_box1, frame_box2, 0, G4ThreeVector(0, 0, 0));
+    auto *logicSTFrame = new G4LogicalVolume(solidSTFrame, frame_mat, "STFrameLV");
+    new G4PVPlacement(0, G4ThreeVector(0., 0., 0.), logicSTFrame, "Scintillator Tracker Frame", logicSTCon, false, 0);
+
+
+    auto *solidSTPlane = new G4Box("STPlaneS", slen_long/2., slen_short/2., fthick_z/2.);
+    // scintillator planes
+    for (int i = 0; i < 4; ++i) {
+        auto rot = new G4RotationMatrix;
+        rot->rotateZ(twopi/4.*i);
+        double arm = (slen_long + slen_short)/2.;
+        double x = sin(twopi/4.*i)*arm;
+        double y = cos(twopi/4.*i)*arm;
+        auto *logicSTPlane = new G4LogicalVolume(solidSTPlane, scint_mat, Form("STPlane%01dLV", i));
+        new G4PVPlacement(rot, G4ThreeVector(x, y, 0.), logicSTPlane, Form("Scintillator Tracker Plane %d", i),
+                          logicSTCon, false, i);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

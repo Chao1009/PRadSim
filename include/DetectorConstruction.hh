@@ -38,7 +38,7 @@
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
-
+#include "G4ThreeVector.hh"
 #include "G4String.hh"
 
 #include <map>
@@ -96,6 +96,7 @@ private:
     void AddVaccumBox(G4LogicalVolume *mother);
     void AddGEM(G4LogicalVolume *mother, int layerid, bool culess);
     void AddHyCal(G4LogicalVolume *mother);
+    void AddScintTracker(G4LogicalVolume *mother, G4ThreeVector pos);
 
     G4String fConfig;
 
