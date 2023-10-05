@@ -237,6 +237,8 @@ int main()
     fprintf(fp, "%lf MeV\n", Ei_1);
     fprintf(fp, "polar angle range:\n");
     fprintf(fp, "%lf ~ %lf deg\n", theta_min / deg, theta_max / deg);
+    fprintf(fp, "elasticity cut range:\n");
+    fprintf(fp, "%lf ~ %lf MeV\n", v_min, v_cut);
     fprintf(fp, "angle acceptance (the solid angle):\n");
     fprintf(fp, "%lf steradian\n", omega);
     fprintf(fp, "cross section (averaged over the solid angle):\n");
