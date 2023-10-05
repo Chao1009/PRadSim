@@ -255,7 +255,7 @@ int main()
     fprintf(fp, "%lf MeV\n", Ei_e * 1000);
     fprintf(fp, "polar angle range:\n");
     fprintf(fp, "%lf ~ %lf deg\n", theta_min / deg, theta_max / deg);
-    fprintf(fp, "photon energy range:\n");
+    fprintf(fp, "elasticity cut range:\n");
     fprintf(fp, "%lf ~ %lf MeV\n", E_g_min * 1000, E_g_cut * 1000);
     fprintf(fp, "angle acceptance (the solid angle):\n");
     fprintf(fp, "%lf steradian\n", omega);
