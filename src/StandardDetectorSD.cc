@@ -60,7 +60,7 @@
 
 StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fHitsCollection(NULL), fRegistered(false)
 {
-    fID = name.hash() % 100000;
+    fID = std::hash<std::string>{}(name.data()) % 100000;
     //G4cout << name << "\t" << fAbbrev << "\t" << fID << G4endl;
 
     G4String cname = "Coll";
