@@ -89,9 +89,9 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
     fVisAtts.clear();
 
     fWorldSizeXY = 150.0 * cm;
-    fWorldSizeZ = 600.0 * cm;
+    fWorldSizeZ = 800.0 * cm;
 
-    fTargetCenter = -300.0 * cm + 89.0 * mm; // PRad survey
+    fTargetCenter = -455.0 * cm; // PRad survey
     fTargetR = 14.5 * cm;
     fTargetHalfL = 2.75 * cm;
     fTargetMat = "D2Gas";
@@ -128,8 +128,8 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
         fRecoilDetSDOn = false;
         fGEMSDOn = true;
         fSciPlaneSDOn = false;
-        fHyCalSDOn = true;
-        fVirtualSDOn = false;
+        fHyCalSDOn = false;
+        fVirtualSDOn = true;
     }
 
     fAttenuationLG = 0.0;
@@ -207,6 +207,7 @@ void DetectorConstruction::DefineMaterials()
     G4Element *Cu = pNM->FindOrBuildElement(z = 29);
     G4Element *Zn = pNM->FindOrBuildElement(z = 30);
     G4Element *As = pNM->FindOrBuildElement(z = 33);
+    G4Element *Ta = pNM->FindOrBuildElement(z = 73);
     G4Element *W  = pNM->FindOrBuildElement(z = 74);
     G4Element *Pb = pNM->FindOrBuildElement(z = 82);
 
@@ -392,6 +393,9 @@ void DetectorConstruction::DefineMaterials()
     PbGlass->AddMaterial(As2O3, fractionmass = 0.0050);
     fVisAtts[PbGlass->GetName()] = new G4VisAttributes(G4Colour::Blue());
 
+    G4Material *Tantalum = new G4Material("Tantalum", density = 16.69 * g / cm3, ncomponents = 1);
+    Tantalum->AddElement(Ta, natoms = 1);
+
     // Virtual Detector Material
     G4Material *VirtualDetM = new G4Material("VirtualDetM", density = universe_mean_density, ncomponents = 1, kStateGas, 0.1 * kelvin, 1.0e-19 * pascal);
     VirtualDetM->AddElement(H, fractionmass = 1.0);
@@ -406,7 +410,7 @@ void DetectorConstruction::DefineMaterials()
 G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 {
     G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
-    G4Material *TargetM = G4Material::GetMaterial("H2Gas");
+    G4Material *TargetM = G4Material::GetMaterial("Tantalum");
     G4Material *TargetCellM = G4Material::GetMaterial("Copper");
     G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
     G4Material *UCollimatorM = G4Material::GetMaterial("Nickel");
@@ -419,6 +423,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4VPhysicalVolume *physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
 
     // Target
+    /*
     // Target Container
     G4VSolid *solidTargetCon = new G4Box("TargetContainerS", 3.5 * cm, 3.5 * cm, 2.1 * cm);
     G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, DefaultM, "TargetContainerLV");
@@ -448,6 +453,11 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, TargetWindowM, "TargetWindowLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
     new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
+    */
+
+    G4Tubs *TargetDisk = new G4Tubs("TargetDisk", 0., 4.0*mm, 100.*0.5*um, 0, twopi);
+    G4LogicalVolume *logicTar = new G4LogicalVolume(TargetDisk, TargetM, "TargetDiskLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter), logicTar, "TargetDiskPV", logicWorld, false, 0);
 
     // Upstream collimator
     // Dimension from PRad beam line drawing (search PRad in JLab drawing database)
@@ -473,19 +483,24 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     AddVaccumBox(logicWorld);
 
     // Center of two GEM should be at -3000.0 + 89.0 + (5226.16 + 5186.45) / 2 + 4.6525 = 2299.9575 mm // (5226.16 + 5186.45) / 2 from Weizhi
-    fGEMCenter[0] = 229.99575 * cm;
+    fGEMCenter[0] = 180. + 229.99575 * cm;
     AddGEM(logicWorld, 0, false);
 
     // The crystal surface should be at -3000.0 + 89.0 + 5646.15 = 2735.15 mm // 5646.15 from Weizhi
-    fCrystalSurf = 273.515 * cm; // Surface of the PWO
-    AddHyCal(logicWorld);
+    fCrystalSurf = 180. + 273.515 * cm; // Surface of the PWO
+    // AddHyCal(logicWorld);
 
     // Virtual Detector
     G4double VirtualDetR = 50.0 * cm;
     G4double VirtualDetZ = 0.1 * mm;
-    G4VSolid *solidVirtualDet = new G4Tubs("VirtualDetS", 0, VirtualDetR, VirtualDetZ / 2.0, 0, twopi);
+    // G4VSolid *solidVirtualDet = new G4Tubs("VirtualDetS", 0, VirtualDetR, VirtualDetZ / 2.0, 0, twopi);
+    G4VSolid *solidVirtualDet1 = new G4Box("VirtualDetS", 600., 600., 0.1/2.);
+    G4VSolid *solidVirtualDet2 = new G4Box("VirtualDetS", 20.85*3, 20.85*3, 0.1);
+    G4SubtractionSolid *solidVirtualDet = new G4SubtractionSolid("TargetCellS", solidVirtualDet1, solidVirtualDet2);
     G4LogicalVolume *logicVirtualDet = new G4LogicalVolume(solidVirtualDet, VirtualDetM, "VirtualDetLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 60 * mm), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
+    // new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 60 * mm), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fCrystalSurf), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
+
 
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
@@ -824,7 +839,7 @@ void DetectorConstruction::AddVaccumBox(G4LogicalVolume *mother)
     G4double VacBoxWinFlangeOffset = 3.81 * cm;
     G4double ArcDistance = 5.59 * cm;
     G4double ArcEndR = (ArcDistance * ArcDistance + VacBoxMaxR * VacBoxMaxR) / (2 * ArcDistance);
-    G4double ArcEndThickness = 1.6 * mm;
+    G4double ArcEndThickness = 1.0 * mm;
     G4double VacBoxWinApertureR = 3.0 * cm;
     G4VSolid *solidVacBoxWin = new G4Sphere("VacuumBoxWindowS", ArcEndR - ArcEndThickness, ArcEndR, 0, twopi, pi - asin(VacBoxMaxR / ArcEndR), asin(VacBoxMaxR / ArcEndR) - asin((VacBoxWinApertureR + 0.1 * mm) / ArcEndR));
     G4LogicalVolume *logicVacBoxWin = new G4LogicalVolume(solidVacBoxWin, VacuumBoxM, "VacuumBoxWindowLV");

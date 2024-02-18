@@ -227,10 +227,8 @@ int main(int argc, char **argv)
 
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
 
-    if (local) {
-        physicsList->RemovePhysics(bElectromagnetic);
-        physicsList->RegisterPhysics(new PhysListEmModified());
-    }
+    physicsList->RemovePhysics(bElectromagnetic);
+    physicsList->RegisterPhysics(new PhysListEmModified());
 
     runManager->SetUserInitialization(physicsList);
 

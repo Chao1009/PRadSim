@@ -251,11 +251,13 @@ void PhysListEmModified::ConstructProcess()
             ph->RegisterProcess(cs, particle);
 
             // Gamma conversion
+            /*
             G4GammaConversion *gc = new G4GammaConversion();
             G4VEmModel *thePenelopeGCModel = new G4PenelopeGammaConversionModel();
             thePenelopeGCModel->SetHighEnergyLimit(1 * GeV);
             gc->SetEmModel(thePenelopeGCModel, 1);
             ph->RegisterProcess(gc, particle);
+            */
 
             // Rayleigh scattering
             ph->RegisterProcess(new G4RayleighScattering(), particle);

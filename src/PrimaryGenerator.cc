@@ -454,13 +454,16 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     }
 
     if (fEventType == "inelastic") {
-        int pid[4];
-        double p[4][3];
+        // G4cout << "inelastic file" << G4endl;
+        G4PrimaryParticle *part = new G4PrimaryParticle(particleTable->FindParticle("e-"));
+        int pid[3] = {part->GetPDGcode(), part->GetPDGcode(), part->GetPDGcode()};
+        double p[3][3];
 
         while (fParser.ParseLine()) {
-            if (!fParser.CheckElements(16))  continue;
+            if (!fParser.CheckElements(9))  continue;
             else {
-                fParser >> pid[0] >> p[0][0] >> p[0][1] >> p[0][2] >> pid[1] >> p[1][0] >> p[1][1] >> p[1][2] >> pid[2] >> p[2][0] >> p[2][1] >> p[2][2] >> pid[3] >> p[3][0] >> p[3][1] >> p[3][2];
+                // fParser >> pid[0] >> p[0][0] >> p[0][1] >> p[0][2] >> pid[1] >> p[1][0] >> p[1][1] >> p[1][2] >> pid[2] >> p[2][0] >> p[2][1] >> p[2][2] >> pid[3] >> p[3][0] >> p[3][1] >> p[3][2];
+                fParser >> p[0][0] >> p[0][1] >> p[0][2] >> p[1][0] >> p[1][1] >> p[1][2] >> p[2][0] >> p[2][1] >> p[2][2];
                 break;
             }
         }
@@ -469,10 +472,10 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         double y = G4RandGauss::shoot(0, 0.08) * mm;
         double z = GenerateZ();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             if (p[i][2] <= 0.) continue;
 
-            G4PrimaryParticle *particleL = new G4PrimaryParticle(pid[i], p[i][0], p[i][1], p[i][2]);
+            G4PrimaryParticle *particleL = new G4PrimaryParticle(pid[i], p[i][0]*GeV, p[i][1]*GeV, p[i][2]*GeV);
             G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
             vertexL->SetPrimary(particleL);
             anEvent->AddPrimaryVertex(vertexL);

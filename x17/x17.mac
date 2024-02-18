@@ -1,0 +1,16 @@
+# /pradsim/gun/type point
+# /pradsim/gun/ebeam 3300
+# /pradsim/gun/pos 0 0 -6000
+# /pradsim/gun/phi 0
+# /pradsim/gun/theta 0
+
+/pradsim/gun/type file
+/pradsim/gun/evtype inelastic
+/pradsim/gun/path /mnt/hgfs/Data/X17/bg_sim/trident_bg1_3_10M.txt.0
+# /pradsim/gun/path trident_bg_1p3_100p0s.txt
+
+/pradsim/event/printmodulo 100000
+/run/initialize
+/run/beamOn 2000000
+
+

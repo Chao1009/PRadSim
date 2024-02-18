@@ -50,6 +50,7 @@
 #include "G4HCofThisEvent.hh"
 #include "G4RunManager.hh"
 #include "G4UserEventAction.hh"
+#include "G4SystemOfUnits.hh"
 
 #include "G4String.hh"
 #include "G4ios.hh"
@@ -89,24 +90,27 @@ void EventAction::BeginOfEventAction(const G4Event *evt)
 
 void EventAction::EndOfEventAction(const G4Event *evt)
 {
-    if (fOnlyRecordHits) {
-        G4HCofThisEvent *HCE = evt->GetHCofThisEvent();
+    G4HCofThisEvent *HCE = evt->GetHCofThisEvent();
+    G4int nHC = HCE->GetNumberOfCollections();
 
-        G4int nHC = HCE->GetNumberOfCollections();
+    double sum = 0.;
+    for (G4int i = 0; i < nHC; i++) {
+        G4String ColName = HCE->GetHC(i)->GetName();
 
-        for (G4int i = 0; i < nHC; i++) {
-            G4String ColName = HCE->GetHC(i)->GetName();
-
-            if (ColName == fCollName)  { // Hard-coded detector name in DetectorConstruction.cc
-                StandardHitsCollection *HyCalColl = (StandardHitsCollection *) HCE->GetHC(i);
-                G4int nHits = HyCalColl->entries();
-
-                if (nHits > 0)
-                    gRootTree->FillTree();
+        if (ColName == "VDColl")  { // Hard-coded detector name in DetectorConstruction.cc
+            StandardHitsCollection *VDColl = (StandardHitsCollection *) HCE->GetHC(i);
+            int Nhit = VDColl->entries();
+            for (int i = 0; i < Nhit; ++i) {
+                auto aHit = (*VDColl)[i];
+                if (aHit->GetInPos().x() < 354.45*mm && aHit->GetInPos().y() < 354.45*mm) {
+                    sum += aHit->GetInMom().mag();
+                }
             }
         }
-    } else
+    }
+    if (sum > 0.7*3300*MeV) {
         gRootTree->FillTree();
+    }
 
     TrackingAction *theTrackingAction = (TrackingAction *)G4RunManager::GetRunManager()->GetUserTrackingAction();
     theTrackingAction->Clear();
