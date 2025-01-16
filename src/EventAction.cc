@@ -58,7 +58,8 @@
 
 EventAction::EventAction(G4String conf) : G4UserEventAction(), fEventID(0), fPrintModulo(1000), fOnlyRecordHits(false)
 {
-    fCollName = "HCColl";
+    //fCollName = "HCColl";
+    fCollName = "VDColl";
 
     if (conf == "test")
         fCollName = "VDColl";
@@ -93,18 +94,19 @@ void EventAction::EndOfEventAction(const G4Event *evt)
         G4HCofThisEvent *HCE = evt->GetHCofThisEvent();
 
         G4int nHC = HCE->GetNumberOfCollections();
-
+	bool WriteFlag = false;
         for (G4int i = 0; i < nHC; i++) {
             G4String ColName = HCE->GetHC(i)->GetName();
-
-            if (ColName == fCollName)  { // Hard-coded detector name in DetectorConstruction.cc
-                StandardHitsCollection *HyCalColl = (StandardHitsCollection *) HCE->GetHC(i);
-                G4int nHits = HyCalColl->entries();
-
-                if (nHits > 0)
-                    gRootTree->FillTree();
-            }
+	    StandardHitsCollection *HitColl = (StandardHitsCollection *) HCE->GetHC(i);
+	    G4int nHits = HitColl->entries();
+	    if (nHits > 0){
+                if (ColName == "HCColl" || ColName == "GEMColl")  { // Hard-coded detector name in DetectorConstruction.cc
+                    WriteFlag = true;
+                }
+	    }
         }
+        if (WriteFlag) gRootTree->FillTree();
+
     } else
         gRootTree->FillTree();
 

@@ -103,6 +103,8 @@ G4bool TrackingDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         G4ThreeVector OutPos = postStepPoint->GetPosition();
         G4ThreeVector OutMom = postStepPoint->GetMomentum();
 
+        G4ThreeVector VertexPos = theTrack->GetVertexPosition();
+
         G4double Time = preStepPoint->GetGlobalTime();
 
         G4double StepLength = 0;
@@ -152,6 +154,7 @@ G4bool TrackingDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
             aHit->SetTrackLength(StepLength);
             aHit->SetPhysV(thePhysVol);
             aHit->SetCopyNo(CopyNo);
+            aHit->SetVertexPos(VertexPos);
 
             fHitsCollection->insert(aHit);
         }

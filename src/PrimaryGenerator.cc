@@ -81,6 +81,7 @@
 
 static double me = 0.510998928 * MeV;
 static double mmu = 105.6583745 * MeV;
+//static double mneu = 939.56542052 * MeV;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -93,7 +94,7 @@ static double mmu = 105.6583745 * MeV;
 PrimaryGenerator::PrimaryGenerator() : G4VPrimaryGenerator(), fRegistered(false), fTargetInfo(false), fTargetCenter(0), fTargetHalfL(0), fEventType(""), fRecoilOn(false), fRecoilParticle(""), fEBeam(0), fReactX(0), fReactY(0), fReactZ(0), fReactTheta(0), fReactPhi(0), fReactThetaLo(0), fReactThetaHi(0), fTargetMass(0)
 {
     fN = 0;
-
+    fPointPID = "e-";
     for (int i = 0; i < MaxN; i++) {
         fPID[i] = -9999;
         fX[i] = 1e+38;
@@ -108,7 +109,7 @@ PrimaryGenerator::PrimaryGenerator() : G4VPrimaryGenerator(), fRegistered(false)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double x, G4double y, G4double z, G4double theta, G4double phi, G4bool rec, G4String par) : G4VPrimaryGenerator(), fRegistered(false), fTargetInfo(false), fTargetCenter(0), fTargetHalfL(0), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fEBeam(e), fReactX(x), fReactY(y), fReactZ(z), fReactTheta(theta), fReactPhi(phi), fReactThetaLo(-1e5), fReactThetaHi(-1e5), fTargetMass(0)
+PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double x, G4double y, G4double z, G4double theta, G4double phi, G4bool rec, G4String par, G4String pid) : G4VPrimaryGenerator(), fRegistered(false), fTargetInfo(false), fTargetCenter(0), fTargetHalfL(0), fEventType(type), fPointPID(pid), fRecoilOn(rec), fRecoilParticle(par), fEBeam(e), fReactX(x), fReactY(y), fReactZ(z), fReactTheta(theta), fReactPhi(phi), fReactThetaLo(-1e5), fReactThetaHi(-1e5), fTargetMass(0)
 {
     if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
         fRecoilParticle = "proton";
@@ -132,7 +133,7 @@ PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double x, G4doub
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par) : G4VPrimaryGenerator(), fRegistered(false), fTargetInfo(false), fTargetCenter(0), fTargetHalfL(0), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fEBeam(e), fReactX(-1e5), fReactY(-1e5), fReactZ(-1e5), fReactTheta(-1e5), fReactPhi(-1e5), fReactThetaLo(thlo), fReactThetaHi(thhi), fTargetMass(0)
+PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par, G4String pid) : G4VPrimaryGenerator(), fRegistered(false), fTargetInfo(false), fTargetCenter(0), fTargetHalfL(0), fEventType(type), fPointPID(pid), fRecoilOn(rec), fRecoilParticle(par), fEBeam(e), fReactX(-1e5), fReactY(-1e5), fReactZ(-1e5), fReactTheta(-1e5), fReactPhi(-1e5), fReactThetaLo(thlo), fReactThetaHi(thhi), fTargetMass(0)
 {
     if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
         fRecoilParticle = "proton";
@@ -165,6 +166,8 @@ PrimaryGenerator::~PrimaryGenerator()
 
 void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 {
+
+    //G4cout << "Using Primary Generator" << G4endl;
     if (!fRegistered) {
         Register(gRootTree->GetTree());
         fRegistered = true;
@@ -215,6 +218,7 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     double P = sqrt(E * E - me * me);
     double cosang = cos(theta_l);
     double p_l = 0, e_l = 0, a = 0;
+    G4String pid = "e-";
 
     if (fEventType == "elastic") { // me is not ignored
         p_l = (P * M / (E + M - P * cosang)) * (((E + M) * sqrt(1 - (me / M) * (me / M) * (1 - cosang * cosang)) + (E + (me / M) * me) * cosang) / (E + M + P * cosang));
@@ -226,12 +230,14 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     } else if (fEventType == "point") {
         e_l = E;
         p_l = sqrt(e_l * e_l - me * me);
+        pid = fPointPID;
     }
 
     if (e_l > E) G4cout << "WARNING: super-elastic event found" << G4endl;
 
     G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
-    G4PrimaryParticle *particleL = new G4PrimaryParticle(particleTable->FindParticle("e-"));
+    G4PrimaryParticle *particleL = new G4PrimaryParticle(particleTable->FindParticle(pid));
+
     double kx_l = sin(theta_l) * cos(phi_l);
     double ky_l = sin(theta_l) * sin(phi_l);
     double kz_l = cos(theta_l);
@@ -425,6 +431,7 @@ PRadPrimaryGenerator::~PRadPrimaryGenerator()
 
 void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 {
+    //G4cout << "Using PRad Primary Generator" << G4endl;
     if (!fRegistered) {
         Register(gRootTree->GetTree());
         fRegistered = true;
@@ -500,6 +507,7 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
             continue;
         else {
             fParser >> e_l >> theta_l >> phi_l >> e_h >> theta_h >> phi_h >> e_p >> theta_p >> phi_p;
+	    //G4cout<<e_l<<" "<<theta_l<<" "<<phi_l<<" "<<e_h<<" "<<theta_h<<" "<<phi_h<<" "<<e_p<<" "<<theta_p<<" "<<phi_p<<G4endl;
             break;
         }
     }
@@ -537,6 +545,7 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 
         if (fEventType == "moller")
             particleH = new G4PrimaryParticle(particleTable->FindParticle("e-"));
+	    //particleH = new G4PrimaryParticle(particleTable->FindParticle("e+"));
         else
             particleH = new G4PrimaryParticle(particleTable->FindParticle(fRecoilParticle));
 
@@ -736,6 +745,7 @@ DRadPrimaryGenerator::~DRadPrimaryGenerator()
 
 void DRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 {
+    //G4cout << "Using DRad Primary Generator" << G4endl;
     if (!fRegistered) {
         Register(gRootTree->GetTree());
         fRegistered = true;

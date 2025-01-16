@@ -96,6 +96,7 @@ void StandardHit::Clear()
     fOutPos.set(0, 0, 0);
     fInMom.set(0, 0, 0);
     fOutMom.set(0, 0, 0);
+    fVertexPos.set(0, 0, 0);
     fTime = 0;
     fEdep = 0;
     fTrackLen = 0;

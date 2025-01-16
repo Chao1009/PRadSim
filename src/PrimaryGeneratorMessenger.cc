@@ -60,6 +60,12 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     GunTypeCmd->SetParameterName("guntype", false);
     GunTypeCmd->SetCandidates("point ring cosmics file");
 
+    GunPointPIDCmd = new G4UIcmdWithAString("/pradsim/gun/gunpid", this);
+    GunPointPIDCmd->SetGuidance("Choose a particle id for the point generator.");
+    GunPointPIDCmd->SetGuidance("  Choice : e-, e+");
+    GunPointPIDCmd->SetParameterName("point pid", false);
+    GunPointPIDCmd->SetCandidates("e- e+");
+
     EventTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
     EventTypeCmd->SetGuidance("Choose a type of model.");
     EventTypeCmd->SetGuidance("  Choice : elastic, disintegration, moller, inelastic");
@@ -144,6 +150,7 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
     delete PileUpProfileCmd;
     delete TargetProfileCmd;
     delete GunDir;
+    delete GunPointPIDCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -152,6 +159,9 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 {
     if (command == GunTypeCmd)
         Action->SetGunType(newValue);
+
+    if (command == GunPointPIDCmd)
+        Action->SetPointPID(newValue);
 
     if (command == EventTypeCmd)
         Action->SetEventType(newValue);

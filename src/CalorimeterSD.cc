@@ -66,7 +66,9 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-static const G4double ZCRFrontSurf = 273.515 * cm;
+//static const G4double ZCRFrontSurf = 273.515 * cm;
+//static const G4double ZCRFrontSurf = (295.00 + 0.0) * cm;
+static const G4double ZCRFrontSurf = 7506.464 * mm + -455.0 * cm;
 //static const G4double ZCRBackSurf = ZCRFrontSurf + 18.0 * cm;
 static const G4double ZLGFrontSurf = ZCRFrontSurf - 9.73 * cm;
 static const G4double ZLGBackSurf = ZLGFrontSurf + 45.0 * cm;
@@ -171,6 +173,9 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
     G4ThreeVector OutPos = postStepPoint->GetPosition();
     G4ThreeVector OutMom = postStepPoint->GetMomentum();
 
+
+    G4ThreeVector VertexPos = theTrack->GetVertexPosition();
+
     G4double InZ = (InPos.z() + OutPos.z()) / 2.0;
     G4double InBeta = preStepPoint->GetBeta();
 
@@ -180,8 +185,9 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     G4double StepLength = 0;
 
-    if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.) {
+    /*if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.) {
         if (theMat == "PbGlass") {
+	    G4cout<<"PbGlass"<<" "<<DetectorID<<" "<<Edep<<G4endl;
             // Edep = aStep->GetTotalEnergyDeposit();
             if (InBeta > 1.0 / 1.65) { // 1.65 is the index of Pb-glass
                 //G4double theta_0 = InMom.theta() / 2.0;
@@ -217,16 +223,17 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
                 StepLength = aStep->GetStepLength() * factor * sin_theta_c * sin_theta_c;
             } // else beta < 1 / n, no Cherenkov light
         } else { // PbWO4
+            //G4cout<<"PbWO4"<<" "<<DetectorID<<" "<<Edep<<G4endl;
             G4double depth = InZ - ZCRFrontSurf;
             G4double factor = fInterpolator->Eval(depth);
 
             if (std::isnan(factor))
-                G4cout << factor << " " << depth << G4endl;
+                G4cout << factor << " hhh " << depth << G4endl;
 
             Edep = Edep * factor;
             StepLength = aStep->GetStepLength();
         }
-    }
+    }*/
 
     G4int CopyNo = theTouchable->GetCopyNumber();
 
@@ -265,6 +272,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         aHit->SetInMom(InMom);
         aHit->SetOutPos(OutPos);
         aHit->SetOutMom(OutMom);
+        aHit->SetVertexPos(VertexPos);
         aHit->SetTime(Time);
         aHit->SetEdep(Edep);
         aHit->SetTrackLength(StepLength);
@@ -321,10 +329,17 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
         fX[i] = aHit->GetInPos().x();
         fY[i] = aHit->GetInPos().y();
         fZ[i] = aHit->GetInPos().z();
+        fOutX[i] = aHit->GetOutPos().x();
+        fOutY[i] = aHit->GetOutPos().y();
+        fOutZ[i] = aHit->GetOutPos().z();
+        fVX[i] = aHit->GetVertexPos().x();
+        fVY[i] = aHit->GetVertexPos().y();
+        fVZ[i] = aHit->GetVertexPos().z();
         fMomentum[i] = aHit->GetInMom().mag();
         fTheta[i] = aHit->GetInMom().theta();
         fPhi[i] = aHit->GetInMom().phi();
         fTime[i] = aHit->GetTime();
+        fEdep[i] = aHit->GetEdep();
     }
 
     fTotalEdep = 0;
@@ -352,6 +367,8 @@ void CalorimeterSD::Register(TTree *tree)
     tree->Branch(Form("%s.TotalTrackL", abbr), &fTotalTrackL, Form("%s.TotalTrackL/D", abbr));
     tree->Branch(Form("%s.ModuleEdep", abbr), fModuleEdep, Form("%s.ModuleEdep[%d]/D", abbr, NModules));
     tree->Branch(Form("%s.ModuleTrackL", abbr), fModuleTrackL, Form("%s.ModuleTrackL[%d]/D", abbr, NModules));
+
+    tree->Branch(Form("%s.DID", abbr), fDID, Form("%s.DID[%s.N]/I", abbr, abbr));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

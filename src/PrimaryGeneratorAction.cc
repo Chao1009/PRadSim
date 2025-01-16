@@ -47,7 +47,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fEventType("elastic"), fE(1100 * MeV), fX(0), fY(0), fZ(-300.0 * cm), fTheta(0), fPhi(0), fThetaLo(0.5 * deg), fThetaHi(6.5 * deg), fEnpLo(1e-4), fEnpHi(1), fPrimaryGenerator(NULL)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fEventType("elastic"), fPointPID("e-"), fE(1100 * MeV), fX(0), fY(0), fZ(-300.0 * cm), fTheta(0), fPhi(0), fThetaLo(0.5 * deg), fThetaHi(6.5 * deg), fEnpLo(1e-4), fEnpHi(1), fPrimaryGenerator(NULL)
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
@@ -81,10 +81,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
         if (!fRecoilParticle.empty() && fRecoilParticle != "none") recoilon = true;
 
         if (fConfig == "prad") {
-            if (fGunType == "point")
-                fPrimaryGenerator = new PrimaryGenerator("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
+            if (fGunType == "point"){
+                fPrimaryGenerator = new PrimaryGenerator("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton", fPointPID);
+            }
             else if (fGunType == "ring")
-                fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, false, "proton");
+                fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, false, "proton", fPointPID);
             else if (fGunType == "cosmics")
                 fPrimaryGenerator = new CosmicsGenerator();
             else
