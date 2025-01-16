@@ -63,8 +63,8 @@ class PrimaryGenerator : public G4VPrimaryGenerator
 {
 public:
     PrimaryGenerator();
-    PrimaryGenerator(G4String type, G4double e, G4double x, G4double y, G4double z, G4double theta, G4double phi, G4bool rec, G4String par);
-    PrimaryGenerator(G4String type, G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par);
+    PrimaryGenerator(G4String type, G4double e, G4double x, G4double y, G4double z, G4double theta, G4double phi, G4bool rec, G4String par, G4String pid = "e-");
+    PrimaryGenerator(G4String type, G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par, G4String pid = "e-");
     virtual ~PrimaryGenerator();
 
     virtual void GeneratePrimaryVertex(G4Event *);
@@ -88,6 +88,7 @@ protected:
 
 private:
     G4String fEventType;
+    G4String fPointPID;
 
     G4bool fRecoilOn;
     G4String fRecoilParticle;

@@ -65,6 +65,7 @@ public:
     inline G4int GetDetectorID() const;
     inline G4ThreeVector GetInPos() const;
     inline G4ThreeVector GetOutPos() const;
+    inline G4ThreeVector GetVertexPos() const;
     inline G4ThreeVector GetInMom() const;
     inline G4ThreeVector GetOutMom() const;
     inline G4double GetTime() const;
@@ -79,6 +80,7 @@ public:
     inline void SetDetectorID(G4int &val);
     inline void SetInPos(G4ThreeVector &xyz);
     inline void SetOutPos(G4ThreeVector &xyz);
+    inline void SetVertexPos(G4ThreeVector &xyz);
     inline void SetInMom(G4ThreeVector &pxpypz);
     inline void SetOutMom(G4ThreeVector &pxpypz);
     inline void SetTime(G4double &val);
@@ -97,6 +99,7 @@ private:
     G4int         fDetID;
     G4ThreeVector fInPos;
     G4ThreeVector fOutPos;
+    G4ThreeVector fVertexPos;
     G4ThreeVector fInMom;
     G4ThreeVector fOutMom;
     G4double      fTime;
@@ -150,6 +153,11 @@ inline G4ThreeVector StandardHit::GetInPos() const
 inline G4ThreeVector StandardHit::GetOutPos() const
 {
     return fOutPos;
+}
+
+inline G4ThreeVector StandardHit::GetVertexPos() const
+{
+    return fVertexPos;
 }
 
 inline G4ThreeVector StandardHit::GetInMom() const
@@ -215,6 +223,11 @@ inline void StandardHit::SetInPos(G4ThreeVector &xyz)
 inline void StandardHit::SetOutPos(G4ThreeVector &xyz)
 {
     fOutPos = xyz;
+}
+
+inline void StandardHit::SetVertexPos(G4ThreeVector &xyz)
+{
+    fVertexPos = xyz;
 }
 
 inline void StandardHit::SetInMom(G4ThreeVector &pxpypz)

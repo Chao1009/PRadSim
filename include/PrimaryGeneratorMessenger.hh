@@ -77,6 +77,7 @@ private:
     G4UIcmdWithAString        *EventFileCmd;
     G4UIcmdWithAString        *PileUpProfileCmd;
     G4UIcmdWithAString        *TargetProfileCmd;
+    G4UIcmdWithAString        *GunPointPIDCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

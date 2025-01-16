@@ -42,7 +42,7 @@
 
 #include "G4String.hh"
 
-#define MaxNHits 300
+#define MaxNHits 1500
 
 class G4HCofThisEvent;
 class G4Step;
@@ -86,6 +86,14 @@ protected:
     double fTime[MaxNHits];
     double fEdep[MaxNHits];
     double fTrackL[MaxNHits];
+
+    double fVX[MaxNHits];
+    double fVY[MaxNHits];
+    double fVZ[MaxNHits];
+
+    double fOutX[MaxNHits];
+    double fOutY[MaxNHits];
+    double fOutZ[MaxNHits];
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -72,12 +72,15 @@ public:
     inline void SetPileUpProfile(G4String profile);
     inline void SetTargetProfile(G4String profile);
 
+    inline void SetPointPID(G4String val);
+
 private:
     G4String fConfig;
 
     G4String fGunType;
     G4String fEventType;
     G4String fRecoilParticle;
+    G4String fPointPID;
 
     double fE;
     double fX, fY, fZ;
@@ -98,6 +101,11 @@ private:
 inline void PrimaryGeneratorAction::SetGunType(G4String val)
 {
     fGunType = val;
+}
+
+inline void PrimaryGeneratorAction::SetPointPID(G4String val)
+{
+    fPointPID = val;
 }
 
 inline void PrimaryGeneratorAction::SetEventType(G4String val)
