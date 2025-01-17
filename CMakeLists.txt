@@ -44,7 +44,7 @@ target_link_libraries(PRadSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #----------------------------------------------------------------------------
 # Add subdirectories to build
 #
-add_subdirectory(digitization)
+# add_subdirectory(digitization)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory
