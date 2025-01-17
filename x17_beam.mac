@@ -20,7 +20,7 @@
 /pradsim/gun/gunpid e-
 
 #energy of the incident particle
-/pradsim/gun/ebeam 22000 MeV
+/pradsim/gun/ebeam 4400 MeV
 
 #frequency of printing out current event number
 /pradsim/event/printmodulo 100000
@@ -35,4 +35,4 @@
 /run/initialize
 
 # the amount of event we want to run
-/run/beamOn 10000000
+/run/beamOn 100000000

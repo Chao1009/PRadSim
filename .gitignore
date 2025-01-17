@@ -35,8 +35,13 @@
 *.out
 *.app
 
+# output files
+*.root
+
 
 ### CMake ###
+build
+build/*
 CMakeCache.txt
 CMakeFiles
 CMakeScripts
