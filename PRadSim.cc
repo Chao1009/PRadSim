@@ -57,6 +57,8 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#define G4UI_USE 1
+#define G4VIS_USE 1
 
 #ifdef G4VIS_USE
     #include "G4VisExecutive.hh"
@@ -137,6 +139,12 @@ int main(int argc, char **argv)
     if (optind + 1 == argc)
         macro = argv[optind++];
 
+#ifdef G4UI_USE
+    printf("enable UI by default (if not macro provided)");
+#endif
+#ifdef G4VIS_USE
+    printf("enable UI by default (if not macro provided)");
+#endif
     // Initialize the random engine
     G4Random::setTheEngine(new CLHEP::Ranlux64Engine);
 

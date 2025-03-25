@@ -114,7 +114,7 @@ PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double x, G4doub
     if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
         fRecoilParticle = "proton";
 
-    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller" && fEventType != "inelastic")
+    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller" && fEventType != "inelastic" && fEventType != "trident")
         fEventType = "elastic";
 
     fN = 0;
@@ -138,7 +138,7 @@ PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double thlo, G4d
     if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
         fRecoilParticle = "proton";
 
-    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller" && fEventType != "inelastic")
+    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller" && fEventType != "inelastic" && fEventType != "trident")
         fEventType = "elastic";
 
     fN = 0;
@@ -485,6 +485,37 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
             anEvent->AddPrimaryVertex(vertexL);
 
             fPID[fN] = pid[i];
+            fX[fN] = x;
+            fY[fN] = y;
+            fZ[fN] = z;
+            fE[fN] = particleL->GetTotalEnergy();
+            fMomentum[fN] = particleL->GetTotalMomentum();
+            fTheta[fN] = particleL->GetMomentum().theta();
+            fPhi[fN] = particleL->GetMomentum().phi();
+            fN++;
+        }
+
+        return;
+    } else if (fEventType == "trident") {
+        double p[3][3];
+        while (fParser.ParseLine()) {
+            if (!fParser.CheckElements(9)) continue;
+            fParser >> p[0][0] >> p[0][1] >> p[0][2] >> p[1][0] >> p[1][1] >> p[1][2] >> p[2][0] >> p[2][1] >> p[2][2];
+            break;
+        }
+
+        double x = G4RandGauss::shoot(0, 0.08) * mm;
+        double y = G4RandGauss::shoot(0, 0.08) * mm;
+        double z = GenerateZ();
+        std::vector<int> pids = {11, 11, -11};
+
+        for (int i = 0; i < 3; i++) {
+            G4PrimaryParticle *particleL = new G4PrimaryParticle(pids[i], p[i][0]*1e3, p[i][1]*1e3, p[i][2]*1e3);
+            G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
+            vertexL->SetPrimary(particleL);
+            anEvent->AddPrimaryVertex(vertexL);
+
+            fPID[fN] = pids[i];
             fX[fN] = x;
             fY[fN] = y;
             fZ[fN] = z;

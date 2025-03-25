@@ -462,47 +462,48 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4VPhysicalVolume *physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
 
     // Target
-    // Target Container
-    G4VSolid *solidTargetCon = new G4Box("TargetContainerS", TargetR + 10.0 * mm, TargetR + 10.0 * mm, TargetHalfL + 1.0 * mm);
-    G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, DefaultM, "TargetContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
+    if (TargetHalfL > 0.) {
+        // Target Container
+        G4VSolid *solidTargetCon = new G4Box("TargetContainerS", TargetR + 10.0 * mm, TargetR + 10.0 * mm, TargetHalfL + 1.0 * mm);
+        G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, DefaultM, "TargetContainerLV");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
 
-    // Target material
-    G4VSolid *solidTarget = new G4Tubs("TargetS", 0, TargetR, TargetHalfL, 0, twopi);
-    G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
+        // Target material
+        G4VSolid *solidTarget = new G4Tubs("TargetS", 0, TargetR, TargetHalfL, 0, twopi);
+        G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
+        if (fTargetMat == "LH2"){
+            G4Material *TargetCellM = G4Material::GetMaterial("Aluminum");
+            G4Tubs *CellTube1 = new G4Tubs("CellTube1", 0, TargetR + 2 * mm, TargetHalfL + 0.125 * mm, 0, twopi);
+            G4Tubs *CellTube2 = new G4Tubs("CellTube2", 0, TargetR + 0.0001 * mm, TargetHalfL + 0.0001 * mm, 0, twopi);
+            G4SubtractionSolid * solidCell = new G4SubtractionSolid("TargetCellS", CellTube1, CellTube2);
+            G4LogicalVolume* logicCell = new G4LogicalVolume(solidCell, TargetCellM, "TargetCellLV");
+            new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
+        }
+        else if (fTargetMat == "Ta"){
+            //do nothing here
+        }
+        else{
+            G4Material *TargetCellM = G4Material::GetMaterial("Copper");
+            G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
+            // Target cell
+            G4double CellXY = 3.5 * cm;
+            G4Box *CellBox = new G4Box("CellBox", CellXY, CellXY, TargetHalfL);
+            G4Tubs *CellTube = new G4Tubs("CellTube", 0, TargetR, TargetHalfL + 1.0 * mm, 0, twopi);
+            G4SubtractionSolid *solidCell = new G4SubtractionSolid("TargetCellS", CellBox, CellTube);
+            G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TargetCellM, "TargetCellLV");
+            new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
 
-    if (fTargetMat == "LH2"){
-        G4Material *TargetCellM = G4Material::GetMaterial("Aluminum");
-        G4Tubs *CellTube1 = new G4Tubs("CellTube1", 0, TargetR + 2 * mm, TargetHalfL + 0.125 * mm, 0, twopi);
-        G4Tubs *CellTube2 = new G4Tubs("CellTube2", 0, TargetR + 0.0001 * mm, TargetHalfL + 0.0001 * mm, 0, twopi);
-        G4SubtractionSolid * solidCell = new G4SubtractionSolid("TargetCellS", CellTube1, CellTube2);
-        G4LogicalVolume* logicCell = new G4LogicalVolume(solidCell, TargetCellM, "TargetCellLV");
-        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
-    }
-    else if (fTargetMat == "Ta"){
-        //do nothing here
-    }
-    else{
-        G4Material *TargetCellM = G4Material::GetMaterial("Copper");
-        G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
-        // Target cell
-        G4double CellXY = 3.5 * cm;
-        G4Box *CellBox = new G4Box("CellBox", CellXY, CellXY, TargetHalfL);
-        G4Tubs *CellTube = new G4Tubs("CellTube", 0, TargetR, TargetHalfL + 1.0 * mm, 0, twopi);
-        G4SubtractionSolid *solidCell = new G4SubtractionSolid("TargetCellS", CellBox, CellTube);
-        G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TargetCellM, "TargetCellLV");
-        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
-
-        // Target cell windows
-        G4double CellApertureR = 2.0 * mm;
-        G4double CellWinThickness = 7.5 * um;
-        G4Box *CellWinBox = new G4Box("CellWinBox", CellXY, CellXY, CellWinThickness / 2.0);
-        G4Tubs *CellWinTube = new G4Tubs("CellWinTube", 0, CellApertureR, CellWinThickness + 1.0 * mm, 0, twopi);
-        G4SubtractionSolid *solidCellWin = new G4SubtractionSolid("TargetWindowS", CellWinBox, CellWinTube);
-        G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, TargetWindowM, "TargetWindowLV");
-        new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
-        new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
+            // Target cell windows
+            G4double CellApertureR = 2.0 * mm;
+            G4double CellWinThickness = 7.5 * um;
+            G4Box *CellWinBox = new G4Box("CellWinBox", CellXY, CellXY, CellWinThickness / 2.0);
+            G4Tubs *CellWinTube = new G4Tubs("CellWinTube", 0, CellApertureR, CellWinThickness + 1.0 * mm, 0, twopi);
+            G4SubtractionSolid *solidCellWin = new G4SubtractionSolid("TargetWindowS", CellWinBox, CellWinTube);
+            G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, TargetWindowM, "TargetWindowLV");
+            new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
+            new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
+        }
     }
     // Upstream collimator
     // Dimension from PRad beam line drawing (search PRad in JLab drawing database)
@@ -625,71 +626,73 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4double CellXY = 15.0 * cm;
 
     // Target Container
-    G4VSolid *solidTargetCon = new G4Box("TargetContainerS", CellXY + 0.1 * cm, CellXY + 0.1 * cm, fTargetHalfL + 0.1 * cm);
-    G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, DefaultM, "TargetContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
+    if (fTargetHalfL > 0.) {
+        G4VSolid *solidTargetCon = new G4Box("TargetContainerS", CellXY + 0.1 * cm, CellXY + 0.1 * cm, fTargetHalfL + 0.1 * cm);
+        G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, DefaultM, "TargetContainerLV");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
 
-    // Target material
-    G4VSolid *solidTarget = new G4Tubs("TargetS", 0, fTargetR, fTargetHalfL, 0, twopi);
-    G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
+        // Target material
+        G4VSolid *solidTarget = new G4Tubs("TargetS", 0, fTargetR, fTargetHalfL, 0, twopi);
+        G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
 
-    // Target cell
-    G4Box *CellBox = new G4Box("CellBox", CellXY, CellXY, fTargetHalfL);
-    G4Tubs *CellTube = new G4Tubs("CellTube", 0, fTargetR, fTargetHalfL + 1.0 * mm, 0, twopi);
-    G4SubtractionSolid *solidCell = new G4SubtractionSolid("TargetCellS", CellBox, CellTube);
-    G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TargetCellM, "TargetCellLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
+        // Target cell
+        G4Box *CellBox = new G4Box("CellBox", CellXY, CellXY, fTargetHalfL);
+        G4Tubs *CellTube = new G4Tubs("CellTube", 0, fTargetR, fTargetHalfL + 1.0 * mm, 0, twopi);
+        G4SubtractionSolid *solidCell = new G4SubtractionSolid("TargetCellS", CellBox, CellTube);
+        G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TargetCellM, "TargetCellLV");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
 
-    // Target cell windows
-    G4double CellApertureR = 2.0 * mm;
-    G4double CellWinThickness = 7.5 * um;
-    G4Box *CellWinBox = new G4Box("CellWinBox", CellXY, CellXY, CellWinThickness / 2.0);
-    G4Tubs *CellWinTube = new G4Tubs("CellWinTube", 0, CellApertureR, CellWinThickness + 1.0 * mm, 0, twopi);
-    G4SubtractionSolid *solidCellWin = new G4SubtractionSolid("TargetWindowS", CellWinBox, CellWinTube);
-    G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, TargetWindowM, "TargetWindowLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, -fTargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, +fTargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
+        // Target cell windows
+        G4double CellApertureR = 2.0 * mm;
+        G4double CellWinThickness = 7.5 * um;
+        G4Box *CellWinBox = new G4Box("CellWinBox", CellXY, CellXY, CellWinThickness / 2.0);
+        G4Tubs *CellWinTube = new G4Tubs("CellWinTube", 0, CellApertureR, CellWinThickness + 1.0 * mm, 0, twopi);
+        G4SubtractionSolid *solidCellWin = new G4SubtractionSolid("TargetWindowS", CellWinBox, CellWinTube);
+        G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, TargetWindowM, "TargetWindowLV");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, -fTargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(0, 0, +fTargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
 
-    // Recoil detector
-    G4double RecoilDetCenter = fRecoilDetCenter - fTargetCenter;
-    G4double CoverThickness = 0.5 * um;
-    G4double RecoilDetAng = twopi / fRecoilDetNSeg;
-    G4double RecoilDetL2OR = fRecoilDetR * cos(RecoilDetAng / 2.0);
-    G4double RecoilDetL2IRC = RecoilDetL2OR - fRecoilDetL2Thickness + CoverThickness;
-    G4double RecoilDetL2IR = RecoilDetL2OR - fRecoilDetL2Thickness;
-    G4double RecoilDetL1OR = RecoilDetL2IR;
-    G4double RecoilDetL1IRC = RecoilDetL1OR - fRecoilDetL1Thickness + CoverThickness;
-    G4double RecoilDetL1IR = RecoilDetL1OR - fRecoilDetL1Thickness;
+        // Recoil detector
+        G4double RecoilDetCenter = fRecoilDetCenter - fTargetCenter;
+        G4double CoverThickness = 0.5 * um;
+        G4double RecoilDetAng = twopi / fRecoilDetNSeg;
+        G4double RecoilDetL2OR = fRecoilDetR * cos(RecoilDetAng / 2.0);
+        G4double RecoilDetL2IRC = RecoilDetL2OR - fRecoilDetL2Thickness + CoverThickness;
+        G4double RecoilDetL2IR = RecoilDetL2OR - fRecoilDetL2Thickness;
+        G4double RecoilDetL1OR = RecoilDetL2IR;
+        G4double RecoilDetL1IRC = RecoilDetL1OR - fRecoilDetL1Thickness + CoverThickness;
+        G4double RecoilDetL1IR = RecoilDetL1OR - fRecoilDetL1Thickness;
 
-    G4double rInnerRDL2[] = {RecoilDetL2IRC, RecoilDetL2IRC};
-    G4double rOuterRDL2[] = {RecoilDetL2OR, RecoilDetL2OR};
-    G4double zPlaneRDL2[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
-    G4VSolid *solidRecoilDet2 = new G4Polyhedra("RecoilDet2S", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL2, rInnerRDL2, rOuterRDL2);
+        G4double rInnerRDL2[] = {RecoilDetL2IRC, RecoilDetL2IRC};
+        G4double rOuterRDL2[] = {RecoilDetL2OR, RecoilDetL2OR};
+        G4double zPlaneRDL2[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
+        G4VSolid *solidRecoilDet2 = new G4Polyhedra("RecoilDet2S", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL2, rInnerRDL2, rOuterRDL2);
 
-    G4double rInnerRDL2Cover[] = {RecoilDetL2IR, RecoilDetL2IR};
-    G4double rOuterRDL2Cover[] = {RecoilDetL2IRC, RecoilDetL2IRC};
-    G4double zPlaneRDL2Cover[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
-    G4VSolid *solidRecoilDet2Cover = new G4Polyhedra("RecoilDet2CoverS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL2Cover, rInnerRDL2Cover, rOuterRDL2Cover);
+        G4double rInnerRDL2Cover[] = {RecoilDetL2IR, RecoilDetL2IR};
+        G4double rOuterRDL2Cover[] = {RecoilDetL2IRC, RecoilDetL2IRC};
+        G4double zPlaneRDL2Cover[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
+        G4VSolid *solidRecoilDet2Cover = new G4Polyhedra("RecoilDet2CoverS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL2Cover, rInnerRDL2Cover, rOuterRDL2Cover);
 
-    G4double rInnerRDL1[] = {RecoilDetL1IRC, RecoilDetL1IRC};
-    G4double rOuterRDL1[] = {RecoilDetL1OR, RecoilDetL1OR};
-    G4double zPlaneRDL1[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
-    G4VSolid *solidRecoilDet1 = new G4Polyhedra("RecoilDet1S", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL1, rInnerRDL1, rOuterRDL1);
+        G4double rInnerRDL1[] = {RecoilDetL1IRC, RecoilDetL1IRC};
+        G4double rOuterRDL1[] = {RecoilDetL1OR, RecoilDetL1OR};
+        G4double zPlaneRDL1[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
+        G4VSolid *solidRecoilDet1 = new G4Polyhedra("RecoilDet1S", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL1, rInnerRDL1, rOuterRDL1);
 
-    G4double rInnerRDL1Cover[] = {RecoilDetL1IR, RecoilDetL1IR};
-    G4double rOuterRDL1Cover[] = {RecoilDetL1IRC, RecoilDetL1IRC};
-    G4double zPlaneRDL1Cover[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
-    G4VSolid *solidRecoilDet1Cover = new G4Polyhedra("RecoilDet1CoverS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL1Cover, rInnerRDL1Cover, rOuterRDL1Cover);
+        G4double rInnerRDL1Cover[] = {RecoilDetL1IR, RecoilDetL1IR};
+        G4double rOuterRDL1Cover[] = {RecoilDetL1IRC, RecoilDetL1IRC};
+        G4double zPlaneRDL1Cover[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
+        G4VSolid *solidRecoilDet1Cover = new G4Polyhedra("RecoilDet1CoverS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL1Cover, rInnerRDL1Cover, rOuterRDL1Cover);
 
-    G4LogicalVolume *logicRecoilDet1 = new G4LogicalVolume(solidRecoilDet1, RecoilDetectorM, "RecoilDet1LV");
-    G4LogicalVolume *logicRecoilDet1Cover = new G4LogicalVolume(solidRecoilDet1Cover, RecoilDetCoverM, "RecoilDet1CoverLV");
-    G4LogicalVolume *logicRecoilDet2 = new G4LogicalVolume(solidRecoilDet2, RecoilDetectorM, "RecoilDet2LV");
-    G4LogicalVolume *logicRecoilDet2Cover = new G4LogicalVolume(solidRecoilDet2Cover, RecoilDetCoverM, "RecoilDet2CoverLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet1Cover, "Recoil Detector 1 Cover", logicTarget, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet1, "Recoil Detector 1", logicTarget, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet2Cover, "Recoil Detector 2 Cover", logicTarget, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet2, "Recoil Detector 2", logicTarget, false, 1);
+        G4LogicalVolume *logicRecoilDet1 = new G4LogicalVolume(solidRecoilDet1, RecoilDetectorM, "RecoilDet1LV");
+        G4LogicalVolume *logicRecoilDet1Cover = new G4LogicalVolume(solidRecoilDet1Cover, RecoilDetCoverM, "RecoilDet1CoverLV");
+        G4LogicalVolume *logicRecoilDet2 = new G4LogicalVolume(solidRecoilDet2, RecoilDetectorM, "RecoilDet2LV");
+        G4LogicalVolume *logicRecoilDet2Cover = new G4LogicalVolume(solidRecoilDet2Cover, RecoilDetCoverM, "RecoilDet2CoverLV");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet1Cover, "Recoil Detector 1 Cover", logicTarget, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet1, "Recoil Detector 1", logicTarget, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet2Cover, "Recoil Detector 2 Cover", logicTarget, false, 1);
+        new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet2, "Recoil Detector 2", logicTarget, false, 1);
+    }
 
     AddVaccumBox(logicWorld);
 
