@@ -15,7 +15,7 @@
 
 /pradsim/gun/type file
 /pradsim/gun/evtype trident
-/pradsim/gun/path md5_2pt2_996.dat
+/pradsim/gun/path md5_4pt4_1000.dat
 
 #frequency of printing out current event number
 /pradsim/event/printmodulo 100000
@@ -28,4 +28,5 @@
 /run/initialize
 
 # the amount of event we want to run
-/run/beamOn 9960000
+# /run/beamOn 9960000
+/run/beamOn 1000000
